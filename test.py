@@ -1,6 +1,5 @@
 #author: Javier Villegas
-#sarah got me into grad school
-mport numpy as np
+import numpy as np
 from pyhdf.SD import SD
 import pprint
 import matplotlib.pyplot as plt
