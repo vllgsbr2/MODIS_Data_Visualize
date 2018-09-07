@@ -1,4 +1,6 @@
-import numpy as np
+#author: Javier Villegas
+#sarah got me into grad school
+mport numpy as np
 from pyhdf.SD import SD
 import pprint
 import matplotlib.pyplot as plt
@@ -65,7 +67,7 @@ def get_radiance_or_reflectance(data_raw, data_field, rad_or_ref):
     data_raw_temp = np.reshape(data_raw,(num_bands, num_horizontal * num_vertical))
     scale_factor, offset = get_scale_and_offset(data_field, num_bands, rad_or_ref)
 
-    #correct raw data to get radiance values
+    #correct raw data to get radiance/reflectance values
     #correct first band manually
     data_corrected_total = (data_raw_temp[0,:] - offset[0]) * scale_factor[0]
     #for loop to put all the bands together
