@@ -1,4 +1,9 @@
-#author: Javier Villegas
+'''
+author: Javier Villegas
+
+plotting module to visualize modis 02 product
+as radiance or reflectance
+'''
 import numpy as np
 from pyhdf.SD import SD
 import pprint
@@ -73,43 +78,59 @@ def get_radiance_or_reflectance(data_raw, data_field, rad_or_ref):
     #get original shape and return radiance/reflectance
     return data_corrected_total.reshape((num_bands, num_horizontal, num_vertical))
 
+def plt_RGB(filename, fieldnames_list, rad_or_ref):
+    '''
+    INPUT
+          filename:        - string     , filepath to file
+          fieldnames_list: - string list, contains 500m res and 250m reshape
+                                          such that bands 1,4,3 for RGB
+                                          i.e. 'EV_500_Aggr1km_RefSB'
+    RETURN
+          plots RGB picture of MODIS 02 product data
+    '''
+    def prepare_data(filename, fieldname, rad_or_ref):
+        '''
+        INPUT
+              filename:  string - hdf file filepath
+              fieldname: string - name of desired dataset
+        RETURN
+              return radiance or reflectance
+        '''
+        data_raw   = get_data(filename, fieldname, 2)
+        data_field = get_data(filename, fieldname, 1)
+        data_SD    = get_data(filename, fieldname, 0)
+        rad_ref    = get_radiance_or_reflectance(data_raw, data_field, rad_or_ref)
 
-filename   = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/MOD021KM.A2017245.1635.061.2017258193451.hdf'
-fieldname  = 'EV_250_Aggr1km_RefSB'
-data_raw   = get_data(filename, fieldname, 2)
-data_field = get_data(filename, fieldname, 1)
-data_SD    = get_data(filename, fieldname, 0)
-rad_or_ref = False #True for radiance, False for reflectance
-radiance_EV_250_Aggr1km_RefSB = get_radiance_or_reflectance(data_raw, data_field, rad_or_ref)
-#print(radiance)
+        return rad_ref
 
+    #make channels for RGB photo (index 01234 -> band 34567)
+    image_blue  = prepare_data(filename, fieldnames_list[0],rad_or_ref)[0,:,:] #band 3 from 500 meter res
+    image_green = prepare_data(filename, fieldnames_list[0],rad_or_ref)[1,:,:] #band 4 from 500 meter res
+    image_red   = prepare_data(filename, fieldnames_list[1],rad_or_ref)[0,:,:] #band 1 from 250 meter res
 
-fieldname  = 'EV_500_Aggr1km_RefSB'
-data_raw   = get_data(filename, fieldname, 2)
-data_field = get_data(filename, fieldname, 1)
-data_SD    = get_data(filename, fieldname, 0)
-rad_or_ref = False #True for radiance, False for reflectance
-radiance_EV_500_Aggr1km_RefSB = get_radiance_or_reflectance(data_raw, data_field, rad_or_ref)
+    #force reflectance values to max out at 1.0/ normalize radiance
+    if not rad_or_ref:
+        np.place(image_red, image_red>1.0, 1.0) #2d image array, condition, value
+        np.place(image_blue, image_blue>1.0, 1.0)
+        np.place(image_green, image_green>1.0, 1.0)
+        plt.imshow(np.dstack([image_red, image_green, image_blue]))
+    else:
+        #use astropy to normalize radiance values to usable pixel brightness
+        from astropy.visualization import make_lupton_rgb
+        image_RGB = make_lupton_rgb(image_red, image_green, image_blue, stretch=0.5)
+        plt.imshow(image_RGB)
 
+    #plot
+    plt.show()
 
+# #example
+# filename   = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/MOD021KM.A2017245.1635.061.2017258193451.hdf'
+# fieldnames_list  = ['EV_500_Aggr1km_RefSB', 'EV_250_Aggr1km_RefSB']
+# rad_or_ref = True #True for radiance, False for reflectance
+# plt_RGB(filename, fieldnames_list, rad_or_ref)
+
+# #debugging tools
 # file = SD('/Users/vllgsbr2/Desktop/MODIS_Training/Data/MOD021KM.A2017245.1635.061.2017258193451.hdf')
 # data = file.select('EV_500_Aggr1km_RefSB')
 # pprint.pprint(data.attributes()) #tells me scales, offsets and bands
-#pprint.pprint(file.datasets()) # shows data fields in file from SD('filename')
-
-#make channels for RGB photo (index 01234 -> band 34567)
-image_blue  = radiance_EV_500_Aggr1km_RefSB[0,:,:] #band
-image_green = radiance_EV_500_Aggr1km_RefSB[1,:,:] #band
-image_red   = radiance_EV_250_Aggr1km_RefSB[0,:,:] #band
-
-np.place(image_red, image_red>1.0, 1.0) #2d image array, condition, value
-np.place(image_blue, image_blue>1.0, 1.0)
-np.place(image_green, image_green>1.0, 1.0)
-
-# #use astropy to normalize radiance values to usable pixel brightness
-# from astropy.visualization import make_lupton_rgb
-# image_RGB = make_lupton_rgb(image_red, image_green, image_blue, stretch=0.5)
-
-#plot
-plt.imshow(np.dstack([image_red, image_green, image_blue]))
-plt.show()
+# pprint.pprint(file.datasets()) # shows data fields in file from SD('filename')
