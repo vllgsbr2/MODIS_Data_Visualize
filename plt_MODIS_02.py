@@ -123,11 +123,12 @@ def plt_RGB(filename, fieldnames_list, rad_or_ref):
     #plot
     plt.show()
 
-# #example
+# #example plot
 # filename   = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/MOD021KM.A2017245.1635.061.2017258193451.hdf'
 # fieldnames_list  = ['EV_500_Aggr1km_RefSB', 'EV_250_Aggr1km_RefSB']
 # rad_or_ref = True #True for radiance, False for reflectance
 # plt_RGB(filename, fieldnames_list, rad_or_ref)
+
 
 # #debugging tools
 # file = SD('/Users/vllgsbr2/Desktop/MODIS_Training/Data/MOD021KM.A2017245.1635.061.2017258193451.hdf')
