@@ -1,8 +1,9 @@
 '''
 author: Javier Villegas
 
-Function: to crop area out of modis file from lat lon
-Application: subset PTA (projected target areas from MODIS data)
+Function: crop area out of MODIS file from lat lon
+Application: subset PTAs for training set
+            (projected target areas from MODIS data)
 '''
 
 from plt_MODIS_03 import *
@@ -26,9 +27,9 @@ SD_field_rawData   = 2 #0,1,2->SD,field,rawData
 data_raw           = get_data(filename_MOD_02, fieldnames_MOD_02[1], SD_field_rawData)
 
 SD_field_rawData   = 1 #0,1,2->SD,field,rawData
-data_field         = get_data(filename_MOD_02, fieldnames_MOD_02[1], SD_field_rawData)
+data_field_MOD_02  = get_data(filename_MOD_02, fieldnames_MOD_02[1], SD_field_rawData)
 
-corrected_raw_data = get_radiance_or_reflectance(data_raw, data_field, rad_or_ref)
+corrected_raw_data = get_radiance_or_reflectance(data_raw, data_field_MOD_02, rad_or_ref)
 
 #define limits of lat,lon, and bands for users
 max_lat = np.max(lat)
@@ -39,9 +40,9 @@ min_lon = np.min(lon)
 
 #collect lat/lon and bands to display to user
 field_attributes_MOD_02 = data_field_MOD_02.attributes()
-field_attributes_MOD_03 = data_field_MOD_03.attributes()
-
-bands_available = field_attributes_MOD_02['bands']
+#field_attributes_MOD_03 = data_field_MOD_03.attributes()
+print(field_attributes_MOD_02)
+bands_available = field_attributes_MOD_02['band_names']
 
 lat_bounds = (max_lat, min_lat)
 lon_bounds = (max_lon, min_lon)
@@ -50,15 +51,26 @@ lon_range  =  max_lon - min_lon
 
 #choose pixel and band
 print('Build lat/lon box for PTA')
-band       = input('enter desired band: ', bands_available)
-lat_center = input('enter desired latitude \n range: ', lat_bounds)
-lon_center = input('enter desired longitude\n range: ', lon_bounds)
+band       = input('enter desired band: ' + str(bands_available) + '\n')
+lat_center = float(input('enter desired latitude\n range: ' + str(lat_bounds) + '\n'))
+lon_center = float(input('enter desired longitude\n range: ' + str(lon_bounds) + '\n'))
 
 #build lat/lon box around center lat/lon
-lat_width = input('enter lat width ', lat_range, '[degrees]')
-lon_width = input('enter lon width', lon_range, '[degrees]')
+lat_width = float(input('enter lat width ' + str(lat_range) + '[degrees]' + '\n'))
+lon_width = float(input('enter lon width ' + str(lon_range) + '[degrees]' + '\n'))
 
 #interpolate user input to available data
-radius_to_PTA = ((lat-lat_center)**2-(lon-lon_center)**2)**0.5
+radius_to_PTA = np.power((np.square(lat-lat_center) + np.square(lon-lon_center)), 0.5)
 min_radius    = np.min(radius_to_PTA)
-PTA_ij_index  = np.where(radius_to_PTA==min_radius)[0,0]
+
+#index from granule the corresponds to user lat/lon PTA
+PTA_ij_index  = np.where(radius_to_PTA==min_radius)
+
+#make box along lines of constant lat & lon or cut box out of granule?
+#what if PTA is on the edge of the granule?
+height = lat_width/2
+length = lon_width/2
+
+
+
+#subset the image from brf/radiance

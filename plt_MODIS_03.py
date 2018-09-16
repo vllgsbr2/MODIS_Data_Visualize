@@ -92,34 +92,34 @@ def get_lon():
 
 
 
-#plot
-fig, axes = plt.subplots(ncols=3)
-cmap = 'jet'
-
-plot_1 = axes[0].imshow(get_solarZenith(), cmap = cmap)
-axes[0].set_title('Solar Zenith Angle\n[degrees]')
-
-plot_2 = axes[1].imshow(get_sensorZenith(), cmap = cmap)
-axes[1].set_title('Sensor Zenith Angle\n[degrees]')
-
-plot_3 = axes[2].imshow(get_relativeAzimuth(), cmap = cmap, vmin=-260, vmax=-210)
-axes[2].set_title('Relative Azimuthal Angle\n[degrees]')
-
-fig.colorbar(plot_1, ax=axes[0])
-fig.colorbar(plot_2, ax=axes[1])
-fig.colorbar(plot_3, ax=axes[2])
-
-fig1, axes1 = plt.subplots(ncols=2)
-
-plot_11  = axes1[0].imshow(get_lon(), cmap = cmap)
-axes1[0].set_title('Longitude\n[degrees]')
-plot_22 = axes1[1].imshow(get_lat(), cmap = cmap)
-axes1[1].set_title('Latitude\n[degrees]')
-
-fig1.colorbar(plot_1, ax=axes1[0])
-fig1.colorbar(plot_2, ax=axes1[1])
-
-plt.show()
+# #plot
+# fig, axes = plt.subplots(ncols=3)
+# cmap = 'jet'
+#
+# plot_1 = axes[0].imshow(get_solarZenith(), cmap = cmap)
+# axes[0].set_title('Solar Zenith Angle\n[degrees]')
+#
+# plot_2 = axes[1].imshow(get_sensorZenith(), cmap = cmap)
+# axes[1].set_title('Sensor Zenith Angle\n[degrees]')
+#
+# plot_3 = axes[2].imshow(get_relativeAzimuth(), cmap = cmap, vmin=-260, vmax=-210)
+# axes[2].set_title('Relative Azimuthal Angle\n[degrees]')
+#
+# fig.colorbar(plot_1, ax=axes[0])
+# fig.colorbar(plot_2, ax=axes[1])
+# fig.colorbar(plot_3, ax=axes[2])
+#
+# fig1, axes1 = plt.subplots(ncols=2)
+#
+# plot_11  = axes1[0].imshow(get_lon(), cmap = cmap)
+# axes1[0].set_title('Longitude\n[degrees]')
+# plot_22 = axes1[1].imshow(get_lat(), cmap = cmap)
+# axes1[1].set_title('Latitude\n[degrees]')
+#
+# fig1.colorbar(plot_1, ax=axes1[0])
+# fig1.colorbar(plot_2, ax=axes1[1])
+#
+# plt.show()
 
 # #debugging tools
 # file = SD('/Users/vllgsbr2/Desktop/MODIS_Training/Data/03032015TWHS/MOD03.A2015062.1645.061.2017319034323.hdf')
