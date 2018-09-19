@@ -14,6 +14,12 @@ filename_MOD_03 = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/03032015TWHS/MOD0
 fieldnames_MOD_02  = ['EV_500_Aggr1km_RefSB', 'EV_250_Aggr1km_RefSB']
 fieldnames_MOD_03  = ['SolarZenith', 'SensorZenith', 'SolarAzimuth',\
                       'SensorAzimuth', 'Latitude', 'Longitude']
+
+#choose grid spacing for subsetting datafield
+grid_space_250m = 250 #meters
+grid_space_500m = 500
+grid_space_1km  = 1000
+
 #load file for geolocation data
 choose_file(filename_MOD_03)
 
@@ -44,10 +50,12 @@ field_attributes_MOD_02 = data_field_MOD_02.attributes()
 print(field_attributes_MOD_02)
 bands_available = field_attributes_MOD_02['band_names']
 
-lat_bounds = (max_lat, min_lat)
-lon_bounds = (max_lon, min_lon)
-lat_range  =  max_lat - min_lat
-lon_range  =  max_lon - min_lon
+lat_bounds = (min_lat, max_lat)
+lon_bounds = (min_lon, max_lon)
+
+# #don't nned width anymore for updated algorithm
+# lat_range  =  max_lat - min_lat
+# lon_range  =  max_lon - min_lon
 
 #choose pixel and band
 print('Build lat/lon box for PTA')
@@ -55,9 +63,6 @@ band       = input('enter desired band: ' + str(bands_available) + '\n')
 lat_center = float(input('enter desired latitude\n range: ' + str(lat_bounds) + '\n'))
 lon_center = float(input('enter desired longitude\n range: ' + str(lon_bounds) + '\n'))
 
-#build lat/lon box around center lat/lon
-lat_width = float(input('enter lat width ' + str(lat_range) + '[degrees]' + '\n'))
-lon_width = float(input('enter lon width ' + str(lon_range) + '[degrees]' + '\n'))
 
 #interpolate user input to available data
 radius_to_PTA = np.power((np.square(lat-lat_center) + np.square(lon-lon_center)), 0.5)
@@ -65,12 +70,29 @@ min_radius    = np.min(radius_to_PTA)
 
 #index from granule the corresponds to user lat/lon PTA
 PTA_ij_index  = np.where(radius_to_PTA==min_radius)
+PTA_i = PTA_ij_index[0]
+PTA_j = PTA_ij_index[1]
 
-#make box along lines of constant lat & lon or cut box out of granule?
-#what if PTA is on the edge of the granule?
-height = lat_width/2
-length = lon_width/2
+#cut box out of granule M km x N km or max box in that area
 
+
+
+
+
+
+
+
+
+# #don't need this code. gonna do km instead of degrees
+# #half distances to PTA in degrees
+# height = lat_width/2
+# length = lon_width/2
+#
+# #find index of limits of box on 4 sides
+# top_of_box = np.where(lat==(lat[PTA_i,PTA_j] + height))
+# bot_of_box = np.where(lat==(lat[PTA_i,PTA_j] - height))
+# right_edge = np.where(lat==(lat[PTA_i,PTA_j] + length))
+# left_edge  = np.where(lat==(lat[PTA_i,PTA_j] - length))
 
 
 #subset the image from brf/radiance
