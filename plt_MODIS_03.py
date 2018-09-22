@@ -12,7 +12,8 @@ MOD03: geolocation data
 from plt_MODIS_02 import * #includes matplotlib and numpy
 
 #used by get functions(filename can be modified by choose_file function)
-filename   = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/03032015TWHS/MOD03.A2015062.1645.061.2017319034323.hdf'
+
+filename   = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_05_18/MOD03.A2018248.1630.061.2018248230625.hdf'
 fieldnames_list  = ['SolarZenith', 'SensorZenith', 'SolarAzimuth','SensorAzimuth', 'Latitude', 'Longitude']
 
 #create dictionaries for angles (used by get functions)
@@ -29,6 +30,8 @@ def choose_file(file_name):
           No return; effect is to change what filename points to outside of def
     '''
     filename = file_name
+
+
 
 def get_solarZenith():
     #obtain field information to grab scales/offsets
