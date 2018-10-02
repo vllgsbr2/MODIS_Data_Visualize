@@ -13,8 +13,17 @@ from plt_MODIS_03 import *
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-filename_MOD_02 = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_05_18/MOD021KM.A2018248.1630.061.2018249014250.hdf'#'/Users/vllgsbr2/Desktop/MODIS_Training/Data/venezuela_08_21_18/MOD021KM.A2018233.1545.061.2018234021223.hdf' #'/Users/vllgsbr2/Desktop/MODIS_Training/Data/03032015TWHS/MOD021KM.A2015062.1645.061.2017319035334.hdf'
-filename_MOD_03 = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_05_18/MOD03.A2018248.1630.061.2018248230625.hdf'#'/Users/vllgsbr2/Desktop/MODIS_Training/Data/venezuela_08_21_18/MOD03.A2018233.1545.061.2018233214936.hdf' #'/Users/vllgsbr2/Desktop/MODIS_Training/Data/03032015TWHS/MOD03.A2015062.1645.061.2017319034323.hdf'
+rad_ref_files   = {'high_lat'  : '/Users/vllgsbr2/Desktop/MODIS_Training/Data/high_latitude/MOD021KM.A2018248.0450.061.2018248133406.hdf',\
+                   'toronto'   : '/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_05_18/MOD021KM.A2018248.1630.061.2018249014250.hdf',\
+                   'maraciabo' : '/Users/vllgsbr2/Desktop/MODIS_Training/Data/venezuela_08_21_18/MOD021KM.A2018233.1545.061.2018234021223.hdf',\
+                   'twhs'      : '/Users/vllgsbr2/Desktop/MODIS_Training/Data/03032015TWHS/MOD021KM.A2015062.1645.061.2017319035334.hdf'}
+geo_files       = {'high_lat'  : '/Users/vllgsbr2/Desktop/MODIS_Training/Data/high_latitude/MOD03.A2018248.0450.061.2018248114733.hdf',
+                   'toronto'   : '/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_05_18/MOD03.A2018248.1630.061.2018248230625.hdf',
+                   'maraciabo' : '/Users/vllgsbr2/Desktop/MODIS_Training/Data/venezuela_08_21_18/MOD03.A2018233.1545.061.2018233214936.hdf',
+                   'twhs'      : '/Users/vllgsbr2/Desktop/MODIS_Training/Data/03032015TWHS/MOD03.A2015062.1645.061.2017319034323.hdf'}
+PTA = 'high_lat'
+filename_MOD_02 = rad_ref_files[PTA]
+filename_MOD_03 = geo_files[PTA]
 
 fieldnames_MOD_02  = ['EV_500_Aggr1km_RefSB', 'EV_250_Aggr1km_RefSB']
 fieldnames_MOD_03  = ['SolarZenith', 'SensorZenith', 'SolarAzimuth',\
@@ -25,8 +34,8 @@ grid_space_250m = 0.25 #km
 grid_space_500m = 0.5
 grid_space_1km  = 1
 
-#load file for geolocation data
-choose_file(filename_MOD_03)
+# #load file for geolocation data
+# choose_file(filename_MOD_03)
 
 #grab lat/lon
 lat = get_lat()
@@ -63,24 +72,31 @@ lat_center = float(input('enter desired latitude range: ' + str(lat_bounds) + '\
 lon_center = float(input('enter desired longitude range: ' + str(lon_bounds) + '\n\n'))
 
 #interpolate user input to available data
-radius_to_PTA = np.power((np.square(lat-lat_center) + np.square(lon-lon_center)), 0.5)
+euclidian_radius_to_PTA = np.power((np.square(lat-lat_center) + np.square(lon-lon_center)), 0.5)
+euclidian_min_radius    = np.min(radius_to_PTA)
+
+################################################################################
+# calculate using haversine/great circle distance instead of Euclidian distance
+#dont need constants R and 2  because we want min val, not absolute
+#R            = 6378000
+lat_r        = np.deg2rad(lat)
+lon_r        = np.deg2rad(lon)
+lat_center_r = np.deg2rad(lat_center)
+lon_center_r = np.deg2rad(lon_center)
+
+alpha = (lat_r - lat_center_r)/2
+beta  = (lon_r - lon_center_r)/2
+
+sigma = np.sin(alpha)**2 + np.cos(lat_center_r)*np.cos(lat_r)*(np.sin(beta)**2)
+
+radius_to_PTA = np.arcsin((sigma**0.5))  #2*R*
 min_radius    = np.min(radius_to_PTA)
+################################################################################
 
 #index from granule the corresponds to user lat/lon PTA
 PTA_ij_index  = np.where(radius_to_PTA==min_radius)
 PTA_i = int(PTA_ij_index[0])
 PTA_j = int(PTA_ij_index[1])
-
-# import scipy.spatial.cKDTree as NN
-# closest_lat    = np.min(lat-lat_center)
-# closest_lat_ij = np.where((lat-lat_center)==closest_lat)
-#
-# closest_lon    = np.min(lat-lat_center)
-# closest_lon_ij = np.where((lon-lon_center)==closest_lon)
-
-
-
-
 
 #cut box out of granule M km x N km or max box in that area
 vertical   = 800 #km
@@ -129,8 +145,6 @@ cropped_corrected_data = corrected_raw_data[band, top_index : bottom_index, left
 
 print("--- %s seconds ---" % (time.time() - start_time))
 
-print('i: ', PTA_i)
-print('j: ', PTA_j)
 #plot
 fig, ax = plt.subplots(ncols=2)
 cmap = 'bone'
@@ -141,7 +155,8 @@ vmax = 1
 circle = patches.Circle((PTA_j,PTA_i), radius=12, facecolor='r')
 circle_center_i = PTA_i - top_index
 circle_center_j = PTA_j - left_index
-circle_crop = patches.Circle((circle_center_i, circle_center_j), radius=4, facecolor='r')
+
+circle_crop = patches.Circle((circle_center_j, circle_center_i), radius=4, facecolor='r')
 rect = patches.Rectangle((left_index,top_index), box_width, box_height ,linewidth=2,edgecolor='r',facecolor='none', fill=False)
 
 ax[0].imshow(corrected_raw_data[band,:,:], vmin=vmin, vmax=vmax, cmap=cmap)
@@ -157,7 +172,10 @@ list(bands_available)
 if band%2==1:
     band = band + 1
 fig.suptitle('Band: '+str(bands_available[band]))
-print(np.shape(corrected_raw_data))
+print('PTA: ', PTA)
+print('i: ', PTA_i)
+print('j: ', PTA_j)
+print(np.shape(corrected_raw_data[0,:,:]))
 print('user lat: ', lat_center)
 print('calc lat: ', lat[PTA_i, PTA_j])
 print('user lon: ', lon_center)
