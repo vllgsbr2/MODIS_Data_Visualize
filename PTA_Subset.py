@@ -72,25 +72,25 @@ lat_center = float(input('enter desired latitude range: ' + str(lat_bounds) + '\
 lon_center = float(input('enter desired longitude range: ' + str(lon_bounds) + '\n\n'))
 
 #interpolate user input to available data
-euclidian_radius_to_PTA = np.power((np.square(lat-lat_center) + np.square(lon-lon_center)), 0.5)
-euclidian_min_radius    = np.min(radius_to_PTA)
+radius_to_PTA = np.power((np.square(lat-lat_center) + np.square(lon-lon_center)), 0.5)
+min_radius    = np.min(radius_to_PTA)
 
 ################################################################################
-# calculate using haversine/great circle distance instead of Euclidian distance
-#dont need constants R and 2  because we want min val, not absolute
-#R            = 6378000
-lat_r        = np.deg2rad(lat)
-lon_r        = np.deg2rad(lon)
-lat_center_r = np.deg2rad(lat_center)
-lon_center_r = np.deg2rad(lon_center)
-
-alpha = (lat_r - lat_center_r)/2
-beta  = (lon_r - lon_center_r)/2
-
-sigma = np.sin(alpha)**2 + np.cos(lat_center_r)*np.cos(lat_r)*(np.sin(beta)**2)
-
-radius_to_PTA = np.arcsin((sigma**0.5))  #2*R*
-min_radius    = np.min(radius_to_PTA)
+# # calculate using haversine/great circle distance instead of Euclidian distance
+# #dont need constants R and 2  because we want min val, not absolute
+# #R            = 6378000
+# lat_r        = np.deg2rad(lat)
+# lon_r        = np.deg2rad(lon)
+# lat_center_r = np.deg2rad(lat_center)
+# lon_center_r = np.deg2rad(lon_center)
+#
+# alpha = (lat_r - lat_center_r)/2
+# beta  = (lon_r - lon_center_r)/2
+#
+# sigma = np.sin(alpha)**2 + np.cos(lat_center_r)*np.cos(lat_r)*(np.sin(beta)**2)
+#
+# radius_to_PTA = np.arcsin((sigma**0.5))  #2*R*
+# min_radius    = np.min(radius_to_PTA)
 ################################################################################
 
 #index from granule the corresponds to user lat/lon PTA
