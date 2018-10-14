@@ -3,8 +3,11 @@ Download MODIS 02,03,35 products from LAADS DAAC csv file
 '''
 import pandas as pd
 import urllib.request
+import sys
+#sys.argv[0] is always the script filepath
 
-filenames_archive = pd.read_csv('/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_05_18/mod_03_021km_35_jan12017_nov302017_filenames.csv', header=0)
+filepath          = sys.argv[1]
+filenames_archive = pd.read_csv(filepath, header=0)
 url_base          = 'https://ladsweb.modaps.eosdis.nasa.gov'
 save_path         = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/test_getPTA_download/'
 
