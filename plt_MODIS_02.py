@@ -78,6 +78,20 @@ def get_radiance_or_reflectance(data_raw, data_field, rad_or_ref):
     #get original shape and return radiance/reflectance
     return data_corrected_total.reshape((num_bands, num_horizontal, num_vertical))
 
+def prepare_data(filename, fieldname, rad_or_ref):
+    '''
+    INPUT
+          filename:  string - hdf file filepath
+          fieldname: string - name of desired dataset
+    RETURN
+          return radiance or reflectance at all bands
+    '''
+    data_raw   = get_data(filename, fieldname, 2)
+    data_field = get_data(filename, fieldname, 1)
+    rad_ref    = get_radiance_or_reflectance(data_raw, data_field, rad_or_ref)
+
+    return rad_ref
+
 def plt_RGB(filename, fieldnames_list, rad_or_ref):
     '''
     INPUT
@@ -88,20 +102,7 @@ def plt_RGB(filename, fieldnames_list, rad_or_ref):
     RETURN
           plots RGB picture of MODIS 02 product data
     '''
-    def prepare_data(filename, fieldname, rad_or_ref):
-        '''
-        INPUT
-              filename:  string - hdf file filepath
-              fieldname: string - name of desired dataset
-        RETURN
-              return radiance or reflectance
-        '''
-        data_raw   = get_data(filename, fieldname, 2)
-        data_field = get_data(filename, fieldname, 1)
-        data_SD    = get_data(filename, fieldname, 0)
-        rad_ref    = get_radiance_or_reflectance(data_raw, data_field, rad_or_ref)
 
-        return rad_ref
 
     #make channels for RGB photo (index 01234 -> band 34567)
     image_blue  = prepare_data(filename, fieldnames_list[0],rad_or_ref)[0,:,:] #band 3 from 500 meter res

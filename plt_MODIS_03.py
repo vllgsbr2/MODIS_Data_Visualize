@@ -11,12 +11,13 @@ MOD03: geolocation data
 
 from plt_MODIS_02 import * #includes matplotlib and numpy
 
-#used by get functions(filename can be modified by choose_file function)
-geo_files       = {'high_lat'     :'/Users/vllgsbr2/Desktop/MODIS_Training/Data/high_latitude/MOD03.A2018248.0450.061.2018248114733.hdf',
-                   'toronto'      :'/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_05_18/MOD03.A2018248.1630.061.2018248230625.hdf',
-                   'maracaibo'    :'/Users/vllgsbr2/Desktop/MODIS_Training/Data/venezuela_08_21_18/MOD03.A2018233.1545.061.2018233214936.hdf',
-                   'twhs'         :'/Users/vllgsbr2/Desktop/MODIS_Training/Data/03032015TWHS/MOD03.A2015062.1645.061.2017319034323.hdf'}
-filename   = geo_files['high_lat']
+# #used by get functions(filename can be modified by choose_file function)
+# geo_files       = {'high_lat'     :'/Users/vllgsbr2/Desktop/MODIS_Training/Data/high_latitude/MOD03.A2018248.0450.061.2018248114733.hdf',
+#                    'toronto'      :'/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_05_18/MOD03.A2018248.1630.061.2018248230625.hdf',
+#                    'maracaibo'    :'/Users/vllgsbr2/Desktop/MODIS_Training/Data/venezuela_08_21_18/MOD03.A2018233.1545.061.2018233214936.hdf',
+#                    'twhs'         :'/Users/vllgsbr2/Desktop/MODIS_Training/Data/03032015TWHS/MOD03.A2015062.1645.061.2017319034323.hdf'}
+# filename   = geo_files['high_lat']
+
 fieldnames_list  = ['SolarZenith', 'SensorZenith', 'SolarAzimuth','SensorAzimuth', 'Latitude', 'Longitude']
 
 #create dictionaries for angles (used by get functions)
@@ -25,18 +26,7 @@ sensor_zenith = {}
 solar_azimuth = {}
 sensor_azimuth = {}
 
-def choose_file(file_name):
-    '''
-    INPUT
-          file_name: string - path to file
-    RETURN
-          No return; effect is to change what filename points to outside of def
-    '''
-    return file_name
-
-
-
-def get_solarZenith():
+def get_solarZenith(filename):
     #obtain field information to grab scales/offsets
     SD_field_rawData = 1 #0 SD, 1 field & 2 returns raw data
     solar_zenith['scale_factor']   = get_data(filename, fieldnames_list[0], SD_field_rawData).attributes()['scale_factor']
@@ -47,7 +37,7 @@ def get_solarZenith():
 
     return solar_zenith['corrected_raw_data']
 
-def get_sensorZenith():
+def get_sensorZenith(filename):
     #obtain field information to grab scales/offsets
     SD_field_rawData = 1 #0 SD, 1 field & 2 returns raw data
     sensor_zenith['scale_factor']  = get_data(filename, fieldnames_list[1], SD_field_rawData).attributes()['scale_factor']
@@ -58,7 +48,7 @@ def get_sensorZenith():
 
     return sensor_zenith['corrected_raw_data']
 
-def get_solarAzimuth():
+def get_solarAzimuth(filename):
     #obtain field information to grab scales/offsets
     SD_field_rawData = 1 #0 SD, 1 field & 2 returns raw data
     solar_azimuth['scale_factor']  = get_data(filename, fieldnames_list[2], SD_field_rawData).attributes()['scale_factor']
@@ -69,7 +59,7 @@ def get_solarAzimuth():
 
     return solar_azimuth['corrected_raw_data']
 
-def get_sensorAzimuth():
+def get_sensorAzimuth(filename):
     #obtain field information to grab scales/offsets
     SD_field_rawData = 1 #0 SD, 1 field & 2 returns raw data
     sensor_azimuth['scale_factor'] = get_data(filename, fieldnames_list[3], SD_field_rawData).attributes()['scale_factor']
@@ -80,17 +70,17 @@ def get_sensorAzimuth():
 
     return sensor_azimuth['corrected_raw_data']
 
-def get_relativeAzimuth():
-    relative_azimuth = get_sensorAzimuth() - get_solarAzimuth()
+def get_relativeAzimuth(filename):
+    relative_azimuth = get_sensorAzimuth(filename) - get_solarAzimuth(filename)
     return relative_azimuth
 
-def get_lat():
+def get_lat(filename):
     SD_field_rawData = 2
     lat = get_data(filename, fieldnames_list[4], SD_field_rawData)
 
     return lat
 
-def get_lon():
+def get_lon(filename):
     SD_field_rawData = 2
     lon = get_data(filename, fieldnames_list[5], SD_field_rawData)
 
@@ -102,13 +92,13 @@ def get_lon():
 # fig, axes = plt.subplots(ncols=3)
 # cmap = 'jet'
 #
-# plot_1 = axes[0].imshow(get_solarZenith(), cmap = cmap)
+# plot_1 = axes[0].imshow(get_solarZenith(filename_MOD_03), cmap = cmap)
 # axes[0].set_title('Solar Zenith Angle\n[degrees]')
 #
-# plot_2 = axes[1].imshow(get_sensorZenith(), cmap = cmap)
+# plot_2 = axes[1].imshow(get_sensorZenith(filename_MOD_03), cmap = cmap)
 # axes[1].set_title('Sensor Zenith Angle\n[degrees]')
 #
-# plot_3 = axes[2].imshow(get_relativeAzimuth(), cmap = cmap, vmin=-260, vmax=-210)
+# plot_3 = axes[2].imshow(get_relativeAzimuth(filename_MOD_03), cmap = cmap, vmin=-260, vmax=-210)
 # axes[2].set_title('Relative Azimuthal Angle\n[degrees]')
 #
 # fig.colorbar(plot_1, ax=axes[0])

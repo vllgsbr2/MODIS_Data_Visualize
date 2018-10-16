@@ -20,19 +20,15 @@ from plt_MODIS_03 import *
 # filename_MOD_03 = geo_files[PTA]
 
 
-def crop_PTA(filename_MOD_02, filename_MOD_03, filename_MOD_35, corrected_raw_data):
+def crop_PTA(filename_MOD_03, corrected_raw_data):
     '''
     INPUT:
-           filename_MOD_02,
-           filename_MOD_03,
-           filename_MOD_35: - string - filepath to products (all same time/loc)
+           filename_MOD_03: - string - filepath to product (all same time/loc)
                                         aggregated to 1km
            corrected_raw_data: - 2D numpy array - contains processed data ready to be cropped
     RETURN:
            cropped corrected_raw_data
     '''
-
-    fieldnames_MOD_02  = ['EV_500_Aggr1km_RefSB', 'EV_250_Aggr1km_RefSB']
     fieldnames_MOD_03  = ['SolarZenith', 'SensorZenith', 'SolarAzimuth',\
                           'SensorAzimuth', 'Latitude', 'Longitude']
 
@@ -41,12 +37,9 @@ def crop_PTA(filename_MOD_02, filename_MOD_03, filename_MOD_35, corrected_raw_da
     grid_space_500m = 0.5
     grid_space_1km  = 1
 
-    # #load file for geolocation data
-    # choose_file(filename_MOD_03)
-
     #grab lat/lon
-    lat = get_lat()
-    lon = get_lon()
+    lat = get_lat(filename_MOD_03)
+    lon = get_lon(filename_MOD_03)
 
     #define limits of lat,lon, and bands for users
     max_lat = np.max(lat)
@@ -55,16 +48,16 @@ def crop_PTA(filename_MOD_02, filename_MOD_03, filename_MOD_35, corrected_raw_da
     min_lat = np.min(lat)
     min_lon = np.min(lon)
 
-    #collect lat/lon and bands to display to user
-    field_attributes_MOD_02 = data_field_MOD_02.attributes()
-    bands_available         = field_attributes_MOD_02['band_names']
+    # #collect lat/lon and bands to display to user
+    # field_attributes_MOD_02 = data_field_MOD_02.attributes()
+    # bands_available         = field_attributes_MOD_02['band_names']
 
     lat_bounds = (min_lat, max_lat)
     lon_bounds = (min_lon, max_lon)
 
     #choose pixel and band
     print('Build lat/lon box for PTA')
-    band       = int(input('enter desired band as index: ' + str(bands_available) + '\n\n'))
+    # band       = int(input('enter desired band as index: ' + str(bands_available) + '\n\n'))
     lat_center = float(input('enter desired latitude range: ' + str(lat_bounds) + '\n\n'))
     lon_center = float(input('enter desired longitude range: ' + str(lon_bounds) + '\n\n'))
 
