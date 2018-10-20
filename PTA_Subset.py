@@ -20,7 +20,7 @@ from plt_MODIS_03 import *
 # filename_MOD_03 = geo_files[PTA]
 
 
-def crop_PTA(filename_MOD_03, corrected_raw_data):
+def crop_PTA(filename_MOD_03, corrected_raw_data, PTA_lat, PTA_lon):
     '''
     INPUT:
            filename_MOD_03: - string - filepath to product (all same time/loc)
@@ -56,10 +56,10 @@ def crop_PTA(filename_MOD_03, corrected_raw_data):
     lon_bounds = (min_lon, max_lon)
 
     #choose pixel and band
-    print('Build lat/lon box for PTA')
-    # band       = int(input('enter desired band as index: ' + str(bands_available) + '\n\n'))
-    lat_center = float(input('enter desired latitude range: ' + str(lat_bounds) + '\n\n'))
-    lon_center = float(input('enter desired longitude range: ' + str(lon_bounds) + '\n\n'))
+    #print('Build lat/lon box for PTA')
+    #band       = int(input('enter desired band as index: ' + '\n\n'))
+    lat_center = PTA_lat #float(input('enter desired latitude range: ' + str(lat_bounds) + '\n\n'))
+    lon_center = PTA_lon #float(input('enter desired longitude range: ' + str(lon_bounds) + '\n\n'))
 
     #interpolate user input to available data
     radius_to_PTA = np.power((np.square(lat-lat_center) + np.square(lon-lon_center)), 0.5)
@@ -131,7 +131,7 @@ def crop_PTA(filename_MOD_03, corrected_raw_data):
     box_height = int(bottom_index - top_index )  #by rows
 
     #just slice array to crop
-    cropped_corrected_data = corrected_raw_data[band, top_index : bottom_index, left_index : right_index]
+    cropped_corrected_data = corrected_raw_data[top_index : bottom_index, left_index : right_index]
 
     return cropped_corrected_data
 
@@ -139,6 +139,7 @@ def crop_PTA(filename_MOD_03, corrected_raw_data):
 # #plot
 # import matplotlib.pyplot as plt
 # import matplotlib.patches as patches
+#
 #
 # fig, ax = plt.subplots(ncols=2)
 # cmap = 'bone'
