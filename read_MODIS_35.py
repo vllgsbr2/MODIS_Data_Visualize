@@ -58,21 +58,35 @@ def get_bits_old(data, N):
 # print("--- %s seconds ---" % (time.time() - start_time))
 
 
-def get_bits(data_SD, N):
+def get_bits(data_SD, N, cMask_or_QualityAssur=True):
     '''
-    cloud mask and byte stack to work on
-    returns numpy.bytes array of byte stack of shape 2030x1354
+    INPUT:
+          data_SD               - 3D numpy array  - cloud mask SD from HDF
+          N                     - int             - byte to work on
+          cMask_or_QualityAssur - boolean         - True for mask, False for QA
+    RETURNS:
+          numpy.bytes array of byte stack of shape 2030x1354
     '''
     shape = np.shape(data_SD)
+
     #convert MODIS 35 signed ints to unsigned ints
-    data_unsigned = np.bitwise_and(data_SD[N, :, :], 0xff)
+    if cMask_or_QualityAssur:
+        data_unsigned = np.bitwise_and(data_SD[N, :, :], 0xff)
+    else:
+        data_unsigned = np.bitwise_and(data_SD[:, :, N], 0xff)
+
+
 
     #type is int16, but unpackbits taks int8, so cast array
     data_unsigned = data_unsigned.astype(np.uint8)#data_unsigned.view('uint8')
 
     #return numpy array of length 8 lists for every element of data_SD
     data_bits = np.unpackbits(data_unsigned)
-    data_bits = np.reshape(data_bits, (shape[1], shape[2], 8))
+
+    if cMask_or_QualityAssur:
+        data_bits = np.reshape(data_bits, (shape[1], shape[2], 8))
+    else:
+        data_bits = np.reshape(data_bits, (shape[0], shape[1], 8))
 
     return data_bits
 
@@ -98,7 +112,13 @@ def decode_byte_1(decoded_mod35_hdf):
     INPUT:
           decoded_mod35_hdf: - numpy array (2030, 1354, 8) - bit representation of MOD_35
     RETURN:
-          decoded_mod35_hdf: - numpy array (6, 2030, 1354) - first 6 MOD_35
+          Cloud_Mask_Flag,
+          new_Unobstructed_FOV_Quality_Flag,
+          Day_Night_Flag,
+          Sun_glint_Flag,
+          Snow_Ice_Background_Flag,
+          new_Land_Water_Flag
+                           : - numpy array (6, 2030, 1354) - first 6 MOD_35
                                                              products from byte 1
 
     '''
@@ -164,8 +184,14 @@ def decode_byte_1(decoded_mod35_hdf):
 # print("--- %s seconds ---" % (time.time() - start_time))
 
 def decode_Quality_Assurance(data_SD_Quality_Assurance):
-    data_bits_3 = get_bits(data_SD_Quality_Assurance, 2)
-    data_bits_4 = get_bits(data_SD_Quality_Assurance, 3)
+    '''
+    INPUT:
+          data_SD_Quality_Assurance - numpy array (2030,1354,10) - HDF SD of QA
+    RETURN:
+          Quality assurance for 5 cloud mask tests
+    '''
+    data_bits_3 = get_bits(data_SD_Quality_Assurance, 2, cMask_or_QualityAssur=False)
+    data_bits_4 = get_bits(data_SD_Quality_Assurance, 3, cMask_or_QualityAssur=False)
 
     QA_High_Cloud_Flag_1380nm         = data_bits_3[:,:, 0]
     QA_Cloud_Flag_Visible_Reflectance = data_bits_3[:,:, 4]
@@ -180,24 +206,37 @@ def decode_Quality_Assurance(data_SD_Quality_Assurance):
            QA_Cloud_Flag_Spatial_Variability
 
 def decode_tests(data_SD, filename_MOD_35):
-    data_bits_3 = get_bits(data_SD, 2)
-    data_bits_4 = get_bits(data_SD, 3)
+    '''
+    INPUT:
+          data_SD         - numpy array (6,2030,1354) - SD from HDF of cloud mask
+          filename_MOD_35 - str                       - path to mod 35 file
+    RETURN:
+          5 cloud mask tests that are quality assured - numpy arrays (2030, 1354)
+          High_Cloud_Flag_1380nm,
+          Cloud_Flag_Visible_Reflectance,
+          Cloud_Flag_Visible_Ratio,
+          Near_IR_Reflectance,
+          Cloud_Flag_Spatial_Variability
+
+    '''
+    data_bits_3_ = get_bits(data_SD, 2)
+    data_bits_4_ = get_bits(data_SD, 3)
 
     data_SD_Quality_Assurance = get_data(filename_MOD_35, 'Quality_Assurance', 2)
     data_bits_QA = decode_Quality_Assurance(data_SD_Quality_Assurance) #for bytes 3&4
 
-    High_Cloud_Flag_1380nm         = data_bits_3[:,:, 0]
-    Cloud_Flag_Visible_Reflectance = data_bits_3[:,:, 4]
-    Cloud_Flag_Visible_Ratio       = data_bits_3[:,:, 5]
-    Near_IR_Reflectance            = data_bits_3[:,:, 6]
-    Cloud_Flag_Spatial_Variability = data_bits_4[:,:, 1]
+    High_Cloud_Flag_1380nm         = data_bits_3_[:,:, 0]
+    Cloud_Flag_Visible_Reflectance = data_bits_3_[:,:, 4]
+    Cloud_Flag_Visible_Ratio       = data_bits_3_[:,:, 5]
+    Near_IR_Reflectance            = data_bits_3_[:,:, 6]
+    Cloud_Flag_Spatial_Variability = data_bits_4_[:,:, 1]
 
     # find indicies where test is not applied; set to -9
-    High_Cloud_Flag_1380nm[np.where(data_bits_QA[0]==0)]         = -9
-    Cloud_Flag_Visible_Reflectance[np.where(data_bits_QA[1]==0)] = -9
-    Cloud_Flag_Visible_Ratio[np.where(data_bits_QA[2]==0)]       = -9
-    Near_IR_Reflectance[np.where(data_bits_QA[3]==0)]            = -9
-    Cloud_Flag_Spatial_Variability[np.where(data_bits_QA[4]==0)] = -9
+    High_Cloud_Flag_1380nm[np.where(data_bits_QA[0]==0)]         = 9
+    Cloud_Flag_Visible_Reflectance[np.where(data_bits_QA[1]==0)] = 9
+    Cloud_Flag_Visible_Ratio[np.where(data_bits_QA[2]==0)]       = 9
+    Near_IR_Reflectance[np.where(data_bits_QA[3]==0)]            = 9
+    Cloud_Flag_Spatial_Variability[np.where(data_bits_QA[4]==0)] = 9
 
     return High_Cloud_Flag_1380nm,\
            Cloud_Flag_Visible_Reflectance,\
@@ -205,7 +244,7 @@ def decode_tests(data_SD, filename_MOD_35):
            Near_IR_Reflectance,\
            Cloud_Flag_Spatial_Variability
 
-
+##############################################
 # #plot
 # import matplotlib.colors as matCol
 # from matplotlib.colors import ListedColormap

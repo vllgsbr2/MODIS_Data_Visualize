@@ -3,6 +3,7 @@ Download MODIS 02,03,35 products from LAADS DAAC csv file
 '''
 import pandas as pd
 import urllib.request
+import os
 import sys
 #sys.argv[0] is always the script filepath
 
@@ -20,13 +21,22 @@ for url in filenames_archive:
         directory = 'MOD_03'
     elif url[23:25]=='02':
         n = 38
-        directory = 'MOD_02'
+        directory = 'MOD_02/'
     else:
         n = 38
-        directory = 'MOD_35'
+        directory = 'MOD_35/'
 
     #give file its full name without url path
     filename = '{}'.format(url[n:])
 
     #arg1: Download the file and  arg2: save it locally
     urllib.request.urlretrieve(url_base+url, save_path + directory + filename)
+
+    #check that file downloaded and has some size
+    statinfo = os.stat(save_path + directory + filename)
+    file_size = statinfo.st_size
+    
+    if file_size > 0:
+        pass
+    else:
+        print(save_path + directory + filename, 'failed to download properly')
