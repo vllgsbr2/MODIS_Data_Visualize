@@ -23,10 +23,10 @@ def check_file_integrity(url, filename, fieldnames, save_path, directory):
                 get_data(filename, fieldnames[3], 2)
                 get_data(filename, fieldnames[4], 2)
             except:
-                print(save_path + directory + filename, ' is corrupt')
+                print(filename, ' is corrupt')
 
         else:
-            print(save_path + directory + filename, 'failed to download properly')
+            print(filename, 'failed to download properly')
 
     elif url[23:25]=='03':
         if file_size > 0:
@@ -38,10 +38,10 @@ def check_file_integrity(url, filename, fieldnames, save_path, directory):
                 get_data(filename, fieldnames[9], 2)
                 get_data(filename, fieldnames[10], 2)
             except:
-                print(save_path + directory + filename, ' is corrupt')
+                print(filename, ' is corrupt')
 
         else:
-            print(save_path + directory + filename, ' failed to download properly')
+            print(filename, ' failed to download properly')
 
     else:
         if file_size > 0:
@@ -49,9 +49,9 @@ def check_file_integrity(url, filename, fieldnames, save_path, directory):
                 get_data(filename, fieldnames[0], 2)
                 get_data(filename, fieldnames[1], 2)
             except:
-                print(save_path + directory + filename, ' is corrupt')
+                print(filename, ' is corrupt')
         else:
-            print(save_path + directory + filename, 'failed to download properly')
+            print(filename, 'failed to download properly')
 
 def download_granule(url, url_base, save_path, download_check):
     #check product to put into corresponding directory
@@ -74,10 +74,6 @@ def download_granule(url, url_base, save_path, download_check):
         print('file--- {} ---  {} ---downloaded\n '.format(filenum+1, filename))
 
     return filename, directory
-
-
-
-
 
 
 
