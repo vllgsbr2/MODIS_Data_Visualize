@@ -18,7 +18,8 @@ from plt_MODIS_02 import * #includes matplotlib and numpy
 #                    'twhs'         :'/Users/vllgsbr2/Desktop/MODIS_Training/Data/03032015TWHS/MOD03.A2015062.1645.061.2017319034323.hdf'}
 # filename   = geo_files['high_lat']
 
-fieldnames_list  = ['SolarZenith', 'SensorZenith', 'SolarAzimuth','SensorAzimuth', 'Latitude', 'Longitude']
+fieldnames_list  = ['SolarZenith', 'SensorZenith', 'SolarAzimuth',\
+                    'SensorAzimuth', 'Latitude', 'Longitude']
 
 #create dictionaries for angles (used by get functions)
 solar_zenith  = {}

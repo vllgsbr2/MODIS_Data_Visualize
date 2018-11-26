@@ -101,7 +101,8 @@ def save_mod35(data, save_path):
 def decode_byte_1(decoded_mod35_hdf):
     '''
     INPUT:
-          decoded_mod35_hdf: - numpy array (2030, 1354, 8) - bit representation of MOD_35
+          decoded_mod35_hdf: - numpy array (2030, 1354, 8) - bit representation
+                               of MOD_35
     RETURN:
           Cloud_Mask_Flag,
           new_Unobstructed_FOV_Quality_Flag,
@@ -110,7 +111,7 @@ def decode_byte_1(decoded_mod35_hdf):
           Snow_Ice_Background_Flag,
           new_Land_Water_Flag
                            : - numpy array (6, 2030, 1354) - first 6 MOD_35
-                                                             products from byte 1
+                                                             products from byte1
 
     '''
     data = decoded_mod35_hdf
@@ -130,14 +131,14 @@ def decode_byte_1(decoded_mod35_hdf):
     #new list to stuff new laues into and still perform a good search
     new_Unobstructed_FOV_Quality_Flag = np.empty((shape[0], shape[1]))
 
-    cloudy_index          = np.where((Unobstructed_FOV_Quality_Flag[:,:, 0]==0) & \
-                                     (Unobstructed_FOV_Quality_Flag[:,:, 1]==0))
-    uncertain_clear_index = np.where((Unobstructed_FOV_Quality_Flag[:,:, 0]==0) & \
-                                     (Unobstructed_FOV_Quality_Flag[:,:, 1]==1))
-    probably_clear_index  = np.where((Unobstructed_FOV_Quality_Flag[:,:, 0]==1) & \
-                                     (Unobstructed_FOV_Quality_Flag[:,:, 1]==0))
-    confident_clear_index = np.where((Unobstructed_FOV_Quality_Flag[:,:, 0]==1) & \
-                                     (Unobstructed_FOV_Quality_Flag[:,:, 1]==1))
+    cloudy_index          = np.where((Unobstructed_FOV_Quality_Flag[:,:, 0]==0)\
+                                   & (Unobstructed_FOV_Quality_Flag[:,:, 1]==0))
+    uncertain_clear_index = np.where((Unobstructed_FOV_Quality_Flag[:,:, 0]==0)\
+                                   & (Unobstructed_FOV_Quality_Flag[:,:, 1]==1))
+    probably_clear_index  = np.where((Unobstructed_FOV_Quality_Flag[:,:, 0]==1)\
+                                   & (Unobstructed_FOV_Quality_Flag[:,:, 1]==0))
+    confident_clear_index = np.where((Unobstructed_FOV_Quality_Flag[:,:, 0]==1)\
+                                   & (Unobstructed_FOV_Quality_Flag[:,:, 1]==1))
 
     new_Unobstructed_FOV_Quality_Flag[cloudy_index]          = 0
     new_Unobstructed_FOV_Quality_Flag[uncertain_clear_index] = 1
@@ -177,8 +178,10 @@ def decode_Quality_Assurance(data_SD_Quality_Assurance):
     RETURN:
           Quality assurance for 5 cloud mask tests
     '''
-    data_bits_3 = get_bits(data_SD_Quality_Assurance, 2, cMask_or_QualityAssur=False)
-    data_bits_4 = get_bits(data_SD_Quality_Assurance, 3, cMask_or_QualityAssur=False)
+    data_bits_3 = get_bits(data_SD_Quality_Assurance, 2, \
+                           cMask_or_QualityAssur=False)
+    data_bits_4 = get_bits(data_SD_Quality_Assurance, 3, \
+                           cMask_or_QualityAssur=False)
 
     QA_High_Cloud_Flag_1380nm         = data_bits_3[:,:, 0]
     QA_Cloud_Flag_Visible_Reflectance = data_bits_3[:,:, 4]
@@ -195,10 +198,12 @@ def decode_Quality_Assurance(data_SD_Quality_Assurance):
 def decode_tests(data_SD, filename_MOD_35):
     '''
     INPUT:
-          data_SD         - numpy array (6,2030,1354) - SD from HDF of cloud mask
+          data_SD         - numpy array (6,2030,1354) - SD from HDF of cloud
+                                                        mask
           filename_MOD_35 - str                       - path to mod 35 file
     RETURN:
-          5 cloud mask tests that are quality assured - numpy arrays (2030, 1354)
+          5 cloud mask tests that are quality assured - numpy arrays
+                                                        (2030, 1354)
           High_Cloud_Flag_1380nm,
           Cloud_Flag_Visible_Reflectance,
           Cloud_Flag_Visible_Ratio,
@@ -209,8 +214,9 @@ def decode_tests(data_SD, filename_MOD_35):
     data_bits_3_ = get_bits(data_SD, 2)
     data_bits_4_ = get_bits(data_SD, 3)
 
-    data_SD_Quality_Assurance = get_data(filename_MOD_35, 'Quality_Assurance', 2)
-    data_bits_QA = decode_Quality_Assurance(data_SD_Quality_Assurance) #for bytes 3&4
+    data_SD_Quality_Assurance = get_data(filename_MOD_35, 'Quality_Assurance',2)
+    #for bytes 3&4
+    data_bits_QA = decode_Quality_Assurance(data_SD_Quality_Assurance)
 
     High_Cloud_Flag_1380nm         = data_bits_3_[:,:, 0]
     Cloud_Flag_Visible_Reflectance = data_bits_3_[:,:, 4]
@@ -238,55 +244,57 @@ if __name__ == '__main__':
 
     ############################################################################
     #speed test
-    filename_MOD_35 = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_05_18/MOD35_L2.A2018248.1630.061.2018249014414.hdf'#'/Users/vllgsbr2/Desktop/MODIS_Training/Data/venezuela_08_21_18/MOD35_L2.A2018233.1545.061.2018234021557.hdf'
+    filename_MOD_35 = '''/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_
+    05_18/MOD35_L2.A2018248.1630.061.2018249014414.hdf'''  
     data_SD         = get_data(filename_MOD_35, 'Cloud_Mask', 2)
 
-    # #fast bit
-    # start = time.time()
-    # fast_bits = get_bits(data_SD, 0)
-    # fast_bits = decode_byte_1(fast_bits)
-    # print('---------- ', time.time()-start,' ---------')
-    #
+    #fast bit
+    start = time.time()
+    fast_bits = get_bits(data_SD, 0)
+    fast_bits = decode_byte_1(fast_bits)
+    print('---------- ', time.time()-start,' ---------')
+
     #slow bit
     start = time.time()
     slow_bits = get_bits_old(data_SD, 0)
     print('---------- ', time.time()-start,' ---------')
-    #
-    # #check results
-    # fields = ['Cloud_Mask_Flag              :',\
-    #           'Unobstructed_FOV_Quality_Flag:',\
-    #           'Day_Night_Flag               :',\
-    #           'Sun_glint_Flag               :',\
-    #           'Snow_Ice_Background_Flag     :',\
-    #           'Land_Water_Flag              :']
-    #
-    # for i, field in enumerate(fields):
-    #     print(field, np.all(slow_bits[i]==fast_bits[i]))
-    #
-    # ############################################################################
-    # #plot
-    # import matplotlib.colors as matCol
-    # from matplotlib.colors import ListedColormap
-    #
-    # f, ax = plt.subplots(ncols=2)
-    #
-    # cmap=plt.cm.PiYG
-    # cmap = ListedColormap(['white', 'green', 'blue','black'])
-    # norm = matCol.BoundaryNorm(np.arange(0,5,1), cmap.N)
-    #
-    # im = ax[0].imshow(slow_bits[1], cmap=cmap, norm=norm)
-    # im = ax[1].imshow(fast_bits[1], cmap=cmap, norm=norm)
-    #
-    # cbar_ax = f.add_axes([0.9, 0.15, 0.02, 0.7])
-    # cbar = plt.colorbar(im, cax=cbar_ax)
-    # cbar.set_ticks([0.5,1.5,2.5,3.5])
-    # cbar.set_ticklabels(['cloudy', 'uncertain\nclear', 'probably\nclear', 'confident\nclear'])
-    #
-    # ax[0].set_title('slow bits')
-    # ax[1].set_title('fast bits')
-    # plt.suptitle('MODIS Cloud Mask')
-    #
-    # plt.show()
+
+    #check results
+    fields = ['Cloud_Mask_Flag              :',\
+              'Unobstructed_FOV_Quality_Flag:',\
+              'Day_Night_Flag               :',\
+              'Sun_glint_Flag               :',\
+              'Snow_Ice_Background_Flag     :',\
+              'Land_Water_Flag              :']
+
+    for i, field in enumerate(fields):
+        print(field, np.all(slow_bits[i]==fast_bits[i]))
+
+    ############################################################################
+    #plot
+    import matplotlib.colors as matCol
+    from matplotlib.colors import ListedColormap
+
+    f, ax = plt.subplots(ncols=2)
+
+    cmap=plt.cm.PiYG
+    cmap = ListedColormap(['white', 'green', 'blue','black'])
+    norm = matCol.BoundaryNorm(np.arange(0,5,1), cmap.N)
+
+    im = ax[0].imshow(slow_bits[1], cmap=cmap, norm=norm)
+    im = ax[1].imshow(fast_bits[1], cmap=cmap, norm=norm)
+
+    cbar_ax = f.add_axes([0.9, 0.15, 0.02, 0.7])
+    cbar = plt.colorbar(im, cax=cbar_ax)
+    cbar.set_ticks([0.5,1.5,2.5,3.5])
+    cbar.set_ticklabels(['cloudy', 'uncertain\nclear', 'probably\nclear',\
+                         'confident\nclear'])
+
+    ax[0].set_title('slow bits')
+    ax[1].set_title('fast bits')
+    plt.suptitle('MODIS Cloud Mask')
+
+    plt.show()
 
 
     # #############################################
@@ -299,6 +307,7 @@ if __name__ == '__main__':
     # plt.imshow(fast_bits, cmap=cmap, norm=norm)
     # cbar = plt.colorbar()
     # cbar.set_ticks([0.5,1.5,2.5,3.5])
-    # cbar.set_ticklabels(['cloudy', 'uncertain\nclear', 'probably\nclear', 'confident\nclear'])
+    # cbar.set_ticklabels(['cloudy', 'uncertain\nclear', \
+    #                      'probably\nclear', 'confident\nclear'])
     # plt.title('MODIS Cloud Mask')
     # plt.show()

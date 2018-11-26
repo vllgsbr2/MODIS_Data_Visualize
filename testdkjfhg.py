@@ -5,11 +5,11 @@ Format data base into hdf5 file containing every time stamp associated with a
 granule, with associated dataset of radiance, reflectance, cloudmask, sun view
 geometry, and geolocation.
 '''
-from plt_MODIS_02 import prepare_data
-from plt_MODIS_03 import *
+from read_MODIS_02 import prepare_data
+from read_MODIS_03 import *
 from read_MODIS_35 import *
 from PTA_Subset import crop_PTA
-from multicore_processing import multi_core_crop
+#from multicore_processing import multi_core_crop
 import h5py
 import sys
 import os
@@ -189,6 +189,8 @@ def build_data_base(filename_MOD_02, filename_MOD_03, filename_MOD_35, PTA_lat,\
 
 if __name__ == '__main__':
 
+    import pandas as pd
+
     #choose PTA from keeling
     PTA_file_path   = '/data/keeling/a/vllgsbr2/b/modis_data/toronto_PTA'
 
@@ -202,16 +204,19 @@ if __name__ == '__main__':
     filename_MOD_35 = np.array(os.listdir(PTA_file_path + '/MOD_35'))
 
     #sort files by time so we can access corresponding files without searching in for loop
-    filename_MOD_02 = filename_MOD_02.sort()
-    filename_MOD_03 = filename_MOD_03.sort()
-    filename_MOD_35 = filename_MOD_35.sort()
+    filename_MOD_02 = np.sort(filename_MOD_02)
+    filename_MOD_03 = np.sort(filename_MOD_03)
+    filename_MOD_35 = np.sort(filename_MOD_35)
 
     #grab time stamp (YYYYDDD.HHMM) to name each group after the granule it comes from
-    filename_MOD_02_timeStamp = [x[10:22] for x in filename_MOD_02]
-    filename_MOD_03_timeStamp = [x[7:19]  for x in filename_MOD_03]
-    filename_MOD_35_timeStamp = [x[10:22] for x in filename_MOD_35]
+    #filename_MOD_02_timeStamp = [x[10:22] for x in filename_MOD_02]
+    #filename_MOD_03_timeStamp = [x[7:19]  for x in filename_MOD_03]
+    #filename_MOD_35_timeStamp = [x[10:22] for x in filename_MOD_35]
 
-    print(filename_MOD_02, filename_MOD_03, filename_MOD_35)
+
+    print(directories)
+    #print(directories['MOD_02_sorted'], directories['MOD_03_sorted'],\
+    #      directories['MOD_35_sorted'])
 
     # #create/open file
     # hf_path = './test.hf'

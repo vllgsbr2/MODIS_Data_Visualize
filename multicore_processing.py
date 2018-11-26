@@ -5,8 +5,10 @@ import time
 from multiprocessing import Pool
 import multiprocessing as mp
 
-filename_MOD_35 = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_05_18/MOD35_L2.A2018248.1630.061.2018249014414.hdf'#'/Users/vllgsbr2/Desktop/MODIS_Training/Data/venezuela_08_21_18/MOD35_L2.A2018233.1545.061.2018234021557.hdf'
-filename_MOD_03 = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_05_18/MOD03.A2018248.1630.061.2018248230625.hdf'#'/Users/vllgsbr2/Desktop/MODIS_Training/Data/venezuela_08_21_18/MOD03.A2018233.1545.061.2018233214936.hdf'
+filename_MOD_35 = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_05_18'\
+                  '/MOD35_L2.A2018248.1630.061.2018249014414.hdf'
+filename_MOD_03 = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_05_18'\
+                  '/MOD03.A2018248.1630.061.2018248230625.hdf'
 PTA_lat = 43.65
 PTA_lon = -79.38
 im_single = []
@@ -14,9 +16,6 @@ im_single = []
 def single_Core_test(filename_MOD_35, filename_MOD_03, PTA_lat, PTA_lon):
     data_SD           = get_data(filename_MOD_35, 'Cloud_Mask', 2)
     data_SD_bit       = get_bits(data_SD, 0)
-    # save_path         = './bits.hf'
-    # save_mod35(data_SD_bit, save_path)
-    # data_bits         = np.array(h5py.File(save_path, 'r').get('MOD_35_decoded'))
     data_decoded_bits = decode_byte_1(data_SD_bit)
 
     cloud_mask = {'Cloud_Mask_Flag':data_decoded_bits[0],\
@@ -30,7 +29,7 @@ def single_Core_test(filename_MOD_35, filename_MOD_03, PTA_lat, PTA_lon):
         crop_cm = crop_PTA(filename_MOD_03, cm_val, PTA_lat, PTA_lon)
         im_single.append(crop_cm)
 
-def multi_Core_test(arr):
+def multi_core_crop(arr):
     filename_MOD_35 = arr[0]
     filename_MOD_03 = arr[1]
     PTA_lat         = arr[2]
@@ -40,8 +39,6 @@ def multi_Core_test(arr):
     data_SD           = get_data(filename_MOD_35, 'Cloud_Mask', 2)
     data_SD_bit       = get_bits(data_SD, 0)
     save_path         = './bits.hf'
-    # save_mod35(data_SD_bit, save_path)
-    # data_bits         = np.array(h5py.File(save_path, 'r').get('MOD_35_decoded'))
     data_decoded_bits = decode_byte_1(data_SD_bit)
 
     crop_cm = crop_PTA(filename_MOD_03, data_decoded_bits[num], PTA_lat, PTA_lon)
@@ -69,7 +66,7 @@ if __name__ == '__main__':
 
     pool = Pool(6)
 
-    im_multi = pool.map(multi_Core_test, arr)
+    im_multi = pool.map(multi_core_crop, arr)
     print('---------------------- ',time.time()-t0, ' ----------------------')
     ############################################################################
     #test result

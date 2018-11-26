@@ -11,7 +11,9 @@ from plt_MODIS_02 import get_data
 #sys.argv[0] is always the script filepath
 
 def check_file_integrity(url, filename, fieldnames, save_path, directory):
-    #check that file downloaded and has some size and datafields are not corrupt
+    '''
+    check that file downloaded and has some size and datafields are not corrupt
+    '''
     statinfo   = os.stat(save_path + directory + filename)
     file_size  = statinfo.st_size
     filename   = save_path + directory + filename
@@ -82,7 +84,9 @@ filenames_archive = pd.read_csv(filepath, header=0)
 url_base          = 'https://ladsweb.modaps.eosdis.nasa.gov'
 save_path         = '/data/keeling/a/vllgsbr2/b/modis_data/toronto_PTA/'
 
-filenames_archive = filenames_archive['fileUrls from query MOD021KM--61 MOD03--61 MOD35_L2--61 2017-01-01..2017-12-31 x-79.9y43.9 x-79.1y43.5[5]']
+filenames_archive = filenames_archive['fileUrls from query MOD021KM--61 MOD03-'\
+                                      '-61 MOD35_L2--61 2017-01-01..2017-12-31'\
+                                      ' x-79.9y43.9 x-79.1y43.5[5]']
 
 fieldnames = ['Cloud_Mask', 'Quality_Assurance',\
               'EV_1KM_RefSB', 'EV_250_Aggr1km_RefSB', 'EV_500_Aggr1km_RefSB',\
