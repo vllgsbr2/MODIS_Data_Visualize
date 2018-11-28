@@ -58,7 +58,7 @@ def get_threshold(granule_time_stamp, PTA_database_path):
           granule_time_stamp: - str - YYYYDDD.HHMM
           PTA_database_path : - str - <filepath>.hf
     RETURN:
-          numpy float array of thresholds (2030,1354)
+          numpy float array of thresholds (2030,1354,3)
     '''
 
     'solarAzimuth':solarAzimuth,\
@@ -86,20 +86,117 @@ def get_threshold(granule_time_stamp, PTA_database_path):
     b2 = np.array(granule.get(granule_time_stamp + \
                    '/reflectance/band_2'))
     #calc NDVI (b2-b1)/(b2+b1)
-    NDVI   = (b2-b1)/(b2+b1)
-    #find indicies where of 10 NDVI intervals from 0 to 1
-    NDVI_0_idx = np.where(NDVI<=0.1)
-    NDVI_1_idx = np.where(NDVI<=0.2 & NDVI>0.1)
-    NDVI_2_idx = np.where(NDVI<=0.3 & NDVI>0.2)
-    NDVI_3_idx = np.where(NDVI<=0.4 & NDVI>0.3)
-    NDVI_4_idx = np.where(NDVI<=0.5 & NDVI>0.4)
-    NDVI_5_idx = np.where(NDVI<=0.6 & NDVI>0.5)
-    NDVI_6_idx = np.where(NDVI<=0.7 & NDVI>0.6)
-    NDVI_7_idx = np.where(NDVI<=0.8 & NDVI>0.7)
-    NDVI_8_idx = np.where(NDVI<=0.9 & NDVI>0.8)
-    NDVI_9_idx = np.where(NDVI<=1.0 & NDVI>0.9)
+    NDVI = (b2-b1)/(b2+b1)
+
+    #find indicies for 10 NDVI intervals from 0 to 1
+    NDVI_0_idx = np.where(NDVI<0.1)
+    NDVI_1_idx = np.where(NDVI<0.2 & NDVI>=0.1)
+    NDVI_2_idx = np.where(NDVI<0.3 & NDVI>=0.2)
+    NDVI_3_idx = np.where(NDVI<0.4 & NDVI>=0.3)
+    NDVI_4_idx = np.where(NDVI<0.5 & NDVI>=0.4)
+    NDVI_5_idx = np.where(NDVI<0.6 & NDVI>=0.5)
+    NDVI_6_idx = np.where(NDVI<0.7 & NDVI>=0.6)
+    NDVI_7_idx = np.where(NDVI<0.8 & NDVI>=0.7)
+    NDVI_8_idx = np.where(NDVI<0.9 & NDVI>=0.8)
+    NDVI_9_idx = np.where(NDVI<1.0 & NDVI>=0.9)
+
+    #find where NDVI <0.25 to alert function to switch to band 8 coefficients
+    NDVI_sub25_idx = np.where(NDVI<0.25)
 
 
-    #make an array to put thresholds into
-    thresholds = np.empty((2030,1354, 3))
-    thresholds[NDVI_0_idx, :] = scatter_angle[NDVI_0_idx] * band_1_coef['b1ndvi0']\
+    def thresholds_helper_func(ndvi_bin, NDVI_X_idx, scatter_angle,\
+                                                                thresholds):
+        '''
+        INPUT:
+              ndvi_bin     : - int - 0-9 which interval of ndvi every 0.1 steps
+              band_X       : - int - band number of coefficients
+              NDVI_X_idx   : - 2D numpy array - indicies of NDVI interval
+              scatter_angle: - 2D numpy array - scattering angle for every pixel
+                                                (2030,1354)
+              thresholds   : - 2D numpy array - array to fill with thresholds
+                                                (2030,1354,3)
+        RETURN:
+              thresholds : - numpy array (2030,1354, 3) - with 3 thresholds for
+                                                          every pixel; confident
+                                                          cloudy, confident
+                                                          clear, and a midpoint
+        '''
+
+        ndvi_bin = 'b{0}ndvi{1}'.format('1', ndvibin)
+        #T_NDVI_X = a*S^3 + b*S^2 + c*S + d
+        #where S is scattering angle & a,b,c,d are the coeficients
+        thresholds[NDVI_X_idx, :] = \
+           np.power(scatter_angle[NDVI_X_idx], 3) * band_1_coef[ndvi_bin][3]\
+         + np.power(scatter_angle[NDVI_X_idx], 2) * band_1_coef[ndvi_bin][2]\
+         + scatter_angle[NDVI_X_idx] * band_1_coef[ndvi_bin][1]             \
+         + band_1_coef[ndvi_bin][0]
+
+        #recalc thresholds w/band 8 coefficients for incidies in NDVI_sub25_idx
+        ndvi_bin = 'b{0}ndvi{1}'.format('8', ndvibin)
+
+        thresholds[NDVI_use_band8_coef_idx, :] = \
+           np.power(scatter_angle[NDVI_sub25_idx], 3) * band_8_coef[ndvi_bin][3]\
+         + np.power(scatter_angle[NDVI_sub25_idx], 2) * band_8_coef[ndvi_bin][2]\
+         + scatter_angle[NDVI_sub25_idx] * band_8_coef[ndvi_bin][1]             \
+         + band_1_coef[ndvi_bin][0]
+
+        return thresholds
+
+    #create empty thresholds array to fill with thresholds_helper_func()
+    thresholds  = np.empty((2030,1354, 3))
+    band_X      = 1
+    band_X_coef = band_1_coef
+
+    thresholds = thresholds_helper_func(band_X_coef, 0, band_X,\
+                                        NDVI_0_idx, scatter_angle, thresholds)
+    thresholds = thresholds_helper_func(band_X_coef, 1, band_X,\
+                                        NDVI_1_idx, scatter_angle, thresholds)
+    thresholds = thresholds_helper_func(band_X_coef, 2, band_X,\
+                                        NDVI_2_idx, scatter_angle, thresholds)
+    thresholds = thresholds_helper_func(band_X_coef, 3, band_X,\
+                                        NDVI_3_idx, scatter_angle, thresholds)
+    thresholds = thresholds_helper_func(band_X_coef, 4, band_X,\
+                                        NDVI_4_idx, scatter_angle, thresholds)
+    thresholds = thresholds_helper_func(band_X_coef, 5, band_X,\
+                                        NDVI_5_idx, scatter_angle, thresholds)
+    thresholds = thresholds_helper_func(band_X_coef, 6, band_X,\
+                                        NDVI_6_idx, scatter_angle, thresholds)
+    thresholds = thresholds_helper_func(band_X_coef, 7, band_X,\
+                                        NDVI_7_idx, scatter_angle, thresholds)
+    thresholds = thresholds_helper_func(band_X_coef, 8, band_X,\
+                                        NDVI_8_idx, scatter_angle, thresholds)
+    thresholds = thresholds_helper_func(band_X_coef, 9, band_X,\
+                                        NDVI_9_idx, scatter_angle, thresholds)
+    #print(thresholds[:2, :2, 0:])
+
+    #at this time thresholds should be a completely full array of (2030,1354,3)
+    return thresholds
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    #
