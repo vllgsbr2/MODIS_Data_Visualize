@@ -6,8 +6,9 @@ Application: subset PTAs for training set
             (projected target areas from MODIS data)
 '''
 from plt_MODIS_03 import *
+from plt_MODIS_02 import *
 
-def crop_PTA(filename_MOD_03, corrected_raw_data, PTA_lat, PTA_lon):
+def crop_PTA(filename_MOD_03, corrected_raw_data, PTA_lat, PTA_lon, extra=False):
     '''
     INPUT:
            filename_MOD_03: - string - filepath to product (all same time/loc)
@@ -15,7 +16,7 @@ def crop_PTA(filename_MOD_03, corrected_raw_data, PTA_lat, PTA_lon):
            corrected_raw_data: - 2D numpy array - contains processed data ready
                                                   to be cropped
     RETURN:
-           cropped corrected_raw_data
+           cropped corrected_raw_data (2030, 1354)
     '''
     fieldnames_MOD_03  = ['SolarZenith', 'SensorZenith', 'SolarAzimuth',\
                           'SensorAzimuth', 'Latitude', 'Longitude']
@@ -73,8 +74,8 @@ def crop_PTA(filename_MOD_03, corrected_raw_data, PTA_lat, PTA_lon):
     PTA_j = int(PTA_ij_index[1])
 
     #cut box out of granule M km x N km or max box in that area
-    vertical   = 200 #km
-    horizontal = 200 #km
+    vertical   = 800 #km
+    horizontal = 800 #km
     grid_space = grid_space_1km # _250m or _500m or _1km
 
     #width/height of desired box and granule
@@ -117,51 +118,72 @@ def crop_PTA(filename_MOD_03, corrected_raw_data, PTA_lat, PTA_lon):
     cropped_corrected_data = corrected_raw_data[top_index : bottom_index,\
                                                 left_index : right_index]
 
-    return cropped_corrected_data
+    if not extra:
+        return cropped_corrected_data
+    else:
+        return cropped_corrected_data, PTA_i, PTA_j, top_index, left_index, box_width, box_height
+
 
 ################################################################################
-# #plot
-# import matplotlib.pyplot as plt
-# import matplotlib.patches as patches
-#
-#
-# fig, ax = plt.subplots(ncols=2)
-# cmap = 'bone'
-# vmin = 0
-# vmax = 1
-#
-# #create circle on PTA center and rectangle over PTA
-# circle = patches.Circle((PTA_j,PTA_i), radius=12, facecolor='r')
-# circle_center_i = PTA_i - top_index
-# circle_center_j = PTA_j - left_index
-#
-# circle_crop = patches.Circle((circle_center_j, circle_center_i), radius=4,\
-#                               facecolor='r')
-# rect = patches.Rectangle((left_index,top_index), box_width, box_height,\
-#                        linewidth=2,edgecolor='r',facecolor='none', fill=False)
-#
-# ax[0].imshow(corrected_raw_data[band,:,:], vmin=vmin, vmax=vmax, cmap=cmap)
-# ax[0].set_title('full image')
-# ax[0].add_patch(rect)
-# ax[0].add_patch(circle)
-#
-# ax[1].add_patch(circle_crop)
-# ax[1].imshow(cropped_corrected_data, vmin=vmin, vmax=vmax, cmap=cmap)
-# ax[1].set_title('cropped image')
-#
-# list(bands_available)
-# if band%2==1:
-#     band = band + 1
-# fig.suptitle('Band: '+str(bands_available[band]))
-# print('PTA: ', PTA)
-# print('i: ', PTA_i)
-# print('j: ', PTA_j)
-# print(np.shape(corrected_raw_data[0,:,:]))
-# print('user lat: ', lat_center)
-# print('calc lat: ', lat[PTA_i, PTA_j])
-# print('user lon: ', lon_center)
-# print('calc lon: ', lon[PTA_i, PTA_j])
-#
-# plt.show()
+if __name__ == '__main__':
 
-#subset the image from brf/radiance
+    #plot
+    import matplotlib.pyplot as plt
+    import matplotlib.patches as patches
+    band = 1
+
+    fig, ax = plt.subplots(ncols=2)
+    cmap = 'Spectral'
+    vmin = 0
+    vmax = 1
+    filename_MOD_03 = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/venezuela_08_21_18/MOD03.A2018233.1545.061.2018233214936.hdf'
+    filename_MOD_02 = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/venezuela_08_21_18/MOD021KM.A2018233.1545.061.2018234021223.hdf'
+    PTA_lat         = 10.64
+    PTA_lon         = -71.6
+
+    rad_or_ref              = False
+    reflectance_250_Aggr1km = \
+              prepare_data(filename_MOD_02, 'EV_250_Aggr1km_RefSB', rad_or_ref)
+
+    cropped_corrected_data, PTA_i, PTA_j, top_index, left_index, box_width, box_height = \
+    crop_PTA(filename_MOD_03, reflectance_250_Aggr1km[0], PTA_lat, PTA_lon, extra=True)
+
+    #create circle on PTA center and rectangle over PTA
+    circle = patches.Circle((PTA_j,PTA_i), radius=12.8, facecolor='k')
+    circle_center_i = PTA_i - top_index
+    circle_center_j = PTA_j - left_index
+
+    circle_crop = patches.Circle((circle_center_j, circle_center_i), radius=5,\
+                                  facecolor='k')
+    rect = patches.Rectangle((left_index,top_index), box_width, box_height,\
+                           linewidth=2.5,edgecolor='k',facecolor='none', fill=False)
+
+
+    im = ax[0].imshow(reflectance_250_Aggr1km[0], vmin=vmin, vmax=vmax, cmap=cmap)
+    ax[0].set_title('Full Image')
+    ax[0].set_xticks([])
+    ax[0].set_yticks([])
+    fig.colorbar(im)
+    ax[0].add_patch(rect)
+    ax[0].add_patch(circle)
+
+    ax[1].add_patch(circle_crop)
+    ax[1].imshow(cropped_corrected_data, vmin=vmin, vmax=vmax, cmap=cmap)
+    ax[1].set_title('cropped image')
+    ax[1].set_xticks([])
+    ax[1].set_yticks([])
+
+    fig.suptitle('Band: '+str(band))
+    #plt.savefig('/Users/vllgsbr2/Desktop/MODIS_Training/Plots/images/new_image.jpeg')
+    # print('PTA: ', PTA)
+    # print('i: ', PTA_i)
+    # print('j: ', PTA_j)
+    # print(np.shape(corrected_raw_data[0,:,:]))
+    # print('user lat: ', lat_center)
+    # print('calc lat: ', lat[PTA_i, PTA_j])
+    # print('user lon: ', lon_center)
+    # print('calc lon: ', lon[PTA_i, PTA_j])
+
+    plt.show()
+
+    #subset the image from brf/radiance

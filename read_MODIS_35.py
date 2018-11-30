@@ -244,8 +244,7 @@ if __name__ == '__main__':
 
     ############################################################################
     #speed test
-    filename_MOD_35 = '''/Users/vllgsbr2/Desktop/MODIS_Training/Data/toronto_09_
-    05_18/MOD35_L2.A2018248.1630.061.2018249014414.hdf'''  
+    filename_MOD_35 = '/Users/vllgsbr2/Desktop/MODIS_Training/Data/venezuela_08_21_18/MOD35_L2.A2018233.1545.061.2018234021557.hdf'
     data_SD         = get_data(filename_MOD_35, 'Cloud_Mask', 2)
 
     #fast bit
@@ -254,60 +253,62 @@ if __name__ == '__main__':
     fast_bits = decode_byte_1(fast_bits)
     print('---------- ', time.time()-start,' ---------')
 
-    #slow bit
-    start = time.time()
-    slow_bits = get_bits_old(data_SD, 0)
-    print('---------- ', time.time()-start,' ---------')
+    # #slow bit
+    # start = time.time()
+    # slow_bits = get_bits_old(data_SD, 0)
+    # print('---------- ', time.time()-start,' ---------')
+    #
+    # #check results
+    # fields = ['Cloud_Mask_Flag              :',\
+    #           'Unobstructed_FOV_Quality_Flag:',\
+    #           'Day_Night_Flag               :',\
+    #           'Sun_glint_Flag               :',\
+    #           'Snow_Ice_Background_Flag     :',\
+    #           'Land_Water_Flag              :']
+    #
+    # for i, field in enumerate(fields):
+    #     print(field, np.all(slow_bits[i]==fast_bits[i]))
 
-    #check results
-    fields = ['Cloud_Mask_Flag              :',\
-              'Unobstructed_FOV_Quality_Flag:',\
-              'Day_Night_Flag               :',\
-              'Sun_glint_Flag               :',\
-              'Snow_Ice_Background_Flag     :',\
-              'Land_Water_Flag              :']
-
-    for i, field in enumerate(fields):
-        print(field, np.all(slow_bits[i]==fast_bits[i]))
-
-    ############################################################################
-    #plot
-    import matplotlib.colors as matCol
-    from matplotlib.colors import ListedColormap
-
-    f, ax = plt.subplots(ncols=2)
-
-    cmap=plt.cm.PiYG
-    cmap = ListedColormap(['white', 'green', 'blue','black'])
-    norm = matCol.BoundaryNorm(np.arange(0,5,1), cmap.N)
-
-    im = ax[0].imshow(slow_bits[1], cmap=cmap, norm=norm)
-    im = ax[1].imshow(fast_bits[1], cmap=cmap, norm=norm)
-
-    cbar_ax = f.add_axes([0.9, 0.15, 0.02, 0.7])
-    cbar = plt.colorbar(im, cax=cbar_ax)
-    cbar.set_ticks([0.5,1.5,2.5,3.5])
-    cbar.set_ticklabels(['cloudy', 'uncertain\nclear', 'probably\nclear',\
-                         'confident\nclear'])
-
-    ax[0].set_title('slow bits')
-    ax[1].set_title('fast bits')
-    plt.suptitle('MODIS Cloud Mask')
-
-    plt.show()
-
-
-    # #############################################
+    # ############################################################################
     # #plot
     # import matplotlib.colors as matCol
     # from matplotlib.colors import ListedColormap
+    #
+    # f, ax = plt.subplots(ncols=2)
+    #
     # cmap=plt.cm.PiYG
     # cmap = ListedColormap(['white', 'green', 'blue','black'])
     # norm = matCol.BoundaryNorm(np.arange(0,5,1), cmap.N)
-    # plt.imshow(fast_bits, cmap=cmap, norm=norm)
-    # cbar = plt.colorbar()
+    #
+    # im = ax[0].imshow(slow_bits[1], cmap=cmap, norm=norm)
+    # im = ax[1].imshow(fast_bits[1], cmap=cmap, norm=norm)
+    #
+    # cbar_ax = f.add_axes([0.9, 0.15, 0.02, 0.7])
+    # cbar = plt.colorbar(im, cax=cbar_ax)
     # cbar.set_ticks([0.5,1.5,2.5,3.5])
-    # cbar.set_ticklabels(['cloudy', 'uncertain\nclear', \
-    #                      'probably\nclear', 'confident\nclear'])
-    # plt.title('MODIS Cloud Mask')
+    # cbar.set_ticklabels(['cloudy', 'uncertain\nclear', 'probably\nclear',\
+    #                      'confident\nclear'])
+    #
+    # ax[0].set_title('slow bits')
+    # ax[1].set_title('fast bits')
+    # plt.suptitle('MODIS Cloud Mask')
+    #
     # plt.show()
+
+
+    #############################################
+    #plot
+    import matplotlib.colors as matCol
+    from matplotlib.colors import ListedColormap
+    cmap=plt.cm.PiYG
+    cmap = ListedColormap(['white', 'green', 'blue','black'])
+    norm = matCol.BoundaryNorm(np.arange(0,5,1), cmap.N)
+    plt.imshow(fast_bits[1], cmap=cmap, norm=norm)
+    cbar = plt.colorbar()
+    cbar.set_ticks([0.5,1.5,2.5,3.5])
+    cbar.set_ticklabels(['cloudy', 'uncertain\nclear', \
+                         'probably\nclear', 'confident\nclear'])
+    plt.title('MODIS Cloud Mask')
+    plt.xticks([])
+    plt.yticks([])
+    plt.show()
