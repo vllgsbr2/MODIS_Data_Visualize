@@ -52,11 +52,13 @@ band_8_coef = {\
 #4 coefficients (abcd) for 3 thresholds (confident clear & cloudy, midpoint)
 #for 10 ndvi 0.1 intervals from 0 to 1
 #T_NDVI_X = a*s**3 + b*s**2 + c*s + d
-def get_threshold(granule_time_stamp, PTA_database_path):
+def get_threshold(granule_time_stamp, PTA_database_path, no_database=False):
     '''
     INPUT:
           granule_time_stamp: - str - YYYYDDD.HHMM
           PTA_database_path : - str - <filepath>.hf
+          no_database       : - boolean - if you wanna pass in a filepath make
+                                          True, other wise leave as False
     RETURN:
           numpy float array of thresholds (2030,1354,3)
     '''
@@ -80,7 +82,7 @@ def get_threshold(granule_time_stamp, PTA_database_path):
     vza = vza * np.pi/180
     raa = raa * np.pi/180
     #calc scattering angle (radians or degrees?)
-    scatter_angle = 180/np.pi * np.arccos(-np.cos(sza) * np.cos(vza) \
+    scatter_angle = np.arccos(-np.cos(sza) * np.cos(vza) \
                                 - np.sin(sza) * np.sin(vza) * np.cos(raa))
     #print(scatter_angle)
     #extract bands b1 and b2
@@ -238,7 +240,6 @@ def get_threshold(granule_time_stamp, PTA_database_path):
 if __name__ == '__main__':
 
     granule_time_stamp = '2017228.1545'
-    PTA_database_path  = '/data/keeling/a/vllgsbr2/b/modis_data/toronto_PTA/'\
-                         'database/toronto_PTA_Subsets.hf'
+    PTA_database_path  = '/Users/vllgsbr2/Desktop/toronto_PTA_Subsets.HDF5'
     thresholds = get_threshold(granule_time_stamp, PTA_database_path)
     print(thresholds)
